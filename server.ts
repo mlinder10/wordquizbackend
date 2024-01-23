@@ -11,6 +11,6 @@ app.use(express.json());
 // app.use(checkApiKey);
 
 app.use("/auth", authRouter);
-app.use("/posts", postsRouter);
+app.use("/", postsRouter);
 
 app.listen(PORT, () => console.log(`listening on port ${PORT}`));
