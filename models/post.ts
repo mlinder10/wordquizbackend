@@ -59,6 +59,11 @@ class Post {
       JSON.parse(row.likes)
     );
   }
+
+  static shuffle(posts: Row[]): Row[] {
+    const shuffled = posts.sort(() => Math.random() - 0.5);
+    return shuffled;
+  }
 }
 
 export default Post;

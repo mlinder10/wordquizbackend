@@ -1,21 +1,23 @@
 import { Router } from "express";
-import { client } from "../config";
+import { client, getReqOptions } from "../config";
+import Post from "../models/post";
 
 const router = Router();
+router.use(getReqOptions);
 
 router.get("/", async (req, res) => {
-  const limit = parseInt(
-    typeof req.query.limit === "string" ? req.query.limit : "50"
-  );
-  const offset = parseInt(
-    typeof req.query.offset === "string" ? req.query.offset : "0"
-  );
+  const { limit, offset } = req.body;
+
   try {
     const rs = await client.execute({
       sql: "select * from posts order by createdAt desc limit ? offset ?",
       args: [limit, offset],
     });
+
+    if (req.body.shuffle)
+      return res.status(200).json(Post.shuffle(rs.rows));
     return res.status(200).json(rs.rows);
+    
   } catch (err: any) {
     console.log(err?.message);
     return res.status(500).json({ message: "Internal server error" });
