@@ -2,12 +2,12 @@
   "name": "wordquizbackend",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "dev": "nodemon",
     "test": "ts-node test.ts",
     "build": "tsc",
-    "start": "tsc && node server.js"
+    "start": "tsc && node index.js"
   },
   "keywords": [],
   "author": "",
