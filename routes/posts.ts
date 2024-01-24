@@ -27,4 +27,18 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:search", async (req, res) => {
+  const { search } = req.params;
+  try {
+    const rs = await client.execute({
+      sql: "select * from posts where title like ?",
+      args: [`%${search}%`],
+    });
+    return res.status(200).json(rs.rows);
+  } catch (err: any) {
+    console.log(err?.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 export default router;
