@@ -24,6 +24,6 @@ export function getReqOptions(req: Request, res: Response, next: NextFunction) {
   );
   req.body.limit = limit;
   req.body.offset = offset;
-  req.body.shuffle = typeof req.query.shuffled === "string" && req.query.shuffled === "true";
+  req.body.shuffle = typeof req.query.shuffle === "string" && req.query.shuffle === "true";
   next();
 }

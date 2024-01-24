@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { client, getReqOptions } from "../config";
-import Post from "../models/post";
 
 const router = Router();
 router.use(getReqOptions);
@@ -9,15 +8,19 @@ router.get("/", async (req, res) => {
   const { limit, offset } = req.body;
 
   try {
+    if (req.body.shuffle) {
+      const rs = await client.execute({
+        sql: "select * from posts order by random() limit ? offset ?",
+        args: [limit, offset],
+      });
+      return res.status(200).json(rs.rows);
+    }
+
     const rs = await client.execute({
-      sql: "select * from posts order by createdAt desc limit ? offset ?",
+      sql: "select * from posts limit ? offset ?",
       args: [limit, offset],
     });
-
-    if (req.body.shuffle)
-      return res.status(200).json(Post.shuffle(rs.rows));
     return res.status(200).json(rs.rows);
-    
   } catch (err: any) {
     console.log(err?.message);
     return res.status(500).json({ message: "Internal server error" });
