@@ -14,14 +14,14 @@ router.get("/", async (req, res) => {
         sql: "select * from sets order by random() limit ? offset ?",
         args: [limit, offset],
       });
-      return res.status(200).json(rs.rows);
+      return res.status(200).json(rs.rows.map((row) => Set.fromRow(row)));
     }
 
     const rs = await client.execute({
       sql: "select * from sets limit ? offset ?",
       args: [],
     });
-    return res.status(200).json(rs.rows);
+    return res.status(200).json(rs.rows.map((row) => Set.fromRow(row)));
   } catch (err: any) {
     console.log(err?.message);
     return res.status(500).json({ message: "Internal server error" });
@@ -34,7 +34,7 @@ router.get("/:uid", async (req, res) => {
       sql: "select * from sets where uid = ?",
       args: [req.params.uid],
     });
-    return res.status(200).json(rs.rows);
+    return res.status(200).json(rs.rows.map((row) => Set.fromRow(row)));
   } catch (err: any) {
     console.log(err?.message);
     return res.status(500).json({ message: "Internal server error" });
@@ -65,15 +65,15 @@ router.post("/", async (req, res) => {
 
 router.delete("/:sid", async (req, res) => {
   try {
-    const rs = await client.execute({
+    await client.execute({
       sql: "delete from sets where sid = ?",
       args: [req.params.sid],
     });
-    return res.status(200).json(rs.rows);
+    return res.status(200).json({ message: "success" });
   } catch (err: any) {
     console.log(err?.message);
     return res.status(500).json({ message: "Internal server error" });
   }
-})
+});
 
 export default router;
