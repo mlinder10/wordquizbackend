@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
 
     const rs = await client.execute({
       sql: "select * from sets limit ? offset ?",
-      args: [],
+      args: [limit, offset],
     });
     return res.status(200).json(rs.rows.map((row) => Set.fromRow(row)));
   } catch (err: any) {
