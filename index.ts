@@ -12,7 +12,7 @@ app.use(express.json());
 // app.use(checkApiKey);
 
 app.use("/auth", authRouter);
-app.use("/", postsRouter);
+app.use("/posts", postsRouter);
 app.use("/sets", setsRouter);
 
 app.listen(PORT, () => console.log(`listening on port ${PORT}`));
