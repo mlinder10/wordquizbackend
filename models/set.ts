@@ -1,6 +1,7 @@
 import { Row } from "@libsql/client/.";
 import User from "./user";
 import { v4 as uuid } from "uuid";
+import Post from "./post";
 
 export class Set {
   sid: string;
@@ -46,10 +47,10 @@ export class Set {
     );
   }
 
-  static create(user: User, posts: string[]): Set {
+  static create(user: User, posts: Post[]): Set {
     return new Set(
       uuid(),
-      posts,
+      posts.map((post) => post.pid),
       user.uid,
       user.email,
       user.username,
