@@ -42,4 +42,18 @@ router.get("/:search", async (req, res) => {
   }
 });
 
+router.post("/", async (req, res) => {
+  try {
+    const { pids } = req.body;
+    const rs = await client.execute({
+      sql: "select * from posts where pid in (?)",
+      args: [pids],
+    });
+    return res.status(200).json(rs.rows.map((row) => Post.fromRow(row)));
+  } catch (err: any) {
+    console.log(err?.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 export default router;
