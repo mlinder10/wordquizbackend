@@ -5,6 +5,7 @@ import Post from "./post";
 
 export class Set {
   sid: string;
+  name: string;
   posts: string[];
   uid: string;
   email: string;
@@ -13,6 +14,7 @@ export class Set {
 
   constructor(
     sid: string,
+    name: string,
     posts: string[],
     uid: string,
     email: string,
@@ -20,6 +22,7 @@ export class Set {
     createdAt: string
   ) {
     this.sid = sid;
+    this.name = name;
     this.posts = posts;
     this.uid = uid;
     this.email = email;
@@ -30,6 +33,7 @@ export class Set {
   static fromRow(row: Row): Set | null {
     if (
       typeof row.sid !== "string" ||
+      typeof row.name !== "string" ||
       typeof row.posts !== "string" ||
       typeof row.uid !== "string" ||
       typeof row.email !== "string" ||
@@ -39,6 +43,7 @@ export class Set {
       return null;
     return new Set(
       row.sid,
+      row.name,
       JSON.parse(row.posts),
       row.uid,
       row.email,
@@ -47,9 +52,10 @@ export class Set {
     );
   }
 
-  static create(user: User, posts: Post[]): Set {
+  static create(user: User, posts: Post[], name: string): Set {
     return new Set(
       uuid(),
+      name,
       posts.map((post) => post.pid),
       user.uid,
       user.email,

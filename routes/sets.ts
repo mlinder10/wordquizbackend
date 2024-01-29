@@ -42,13 +42,14 @@ router.get("/:uid", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const { user, posts } = req.body;
-  const set = Set.create(user, posts);
+  const { user, posts, name } = req.body;
+  const set = Set.create(user, posts, name);
   try {
     await client.execute({
-      sql: "insert into sets (sid, posts, uid, email, username, createdAt) values (?, ?, ?, ?, ?, ?)",
+      sql: "insert into sets (sid, name, posts, uid, email, username, createdAt) values (?, ?, ?, ?, ?, ?)",
       args: [
         set.sid,
+        set.name,
         JSON.stringify(set.posts),
         set.uid,
         set.email,
