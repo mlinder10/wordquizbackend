@@ -24,6 +24,18 @@ export function getReqOptions(req: Request, res: Response, next: NextFunction) {
   );
   req.body.limit = limit;
   req.body.offset = offset;
-  req.body.shuffle = typeof req.query.shuffle === "string" && req.query.shuffle === "true";
+  req.body.shuffle =
+    typeof req.query.shuffle === "string" && req.query.shuffle === "true";
   next();
+}
+
+export function generateGameString(game: string) {
+  switch (game) {
+    case "quiz":
+      return "quizesPlayed";
+    case "flashcards":
+      return "flashcardsPlayed";
+    default:
+      return null;
+  }
 }
