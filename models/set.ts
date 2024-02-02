@@ -11,6 +11,10 @@ export class Set {
   email: string;
   username: string;
   createdAt: string;
+  quizesPlayed: number;
+  flashcardsPlayed: number;
+  likes: string[];
+  favorites: string[];
 
   constructor(
     sid: string,
@@ -19,7 +23,11 @@ export class Set {
     uid: string,
     email: string,
     username: string,
-    createdAt: string
+    createdAt: string,
+    quizesPlayed: number,
+    flashcardsPlayed: number,
+    likes: string[],
+    favorites: string[]
   ) {
     this.sid = sid;
     this.name = name;
@@ -28,6 +36,10 @@ export class Set {
     this.email = email;
     this.username = username;
     this.createdAt = createdAt;
+    this.quizesPlayed = quizesPlayed;
+    this.flashcardsPlayed = flashcardsPlayed;
+    this.likes = likes;
+    this.favorites = favorites;
   }
 
   static fromRow(row: Row): Set | null {
@@ -38,7 +50,11 @@ export class Set {
       typeof row.uid !== "string" ||
       typeof row.email !== "string" ||
       typeof row.username !== "string" ||
-      typeof row.createdAt !== "string"
+      typeof row.createdAt !== "string" ||
+      typeof row.quizesPlayed !== "number" ||
+      typeof row.flashcardsPlayed !== "number" ||
+      typeof row.likes !== "string" ||
+      typeof row.favorites !== "string"
     )
       return null;
     return new Set(
@@ -48,7 +64,11 @@ export class Set {
       row.uid,
       row.email,
       row.username,
-      row.createdAt
+      row.createdAt,
+      row.quizesPlayed,
+      row.flashcardsPlayed,
+      JSON.parse(row.likes),
+      JSON.parse(row.favorites)
     );
   }
 
@@ -60,7 +80,11 @@ export class Set {
       user.uid,
       user.email,
       user.username,
-      new Date().toISOString()
+      new Date().toISOString(),
+      0,
+      0,
+      [],
+      []
     );
   }
 }
