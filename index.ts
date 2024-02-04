@@ -5,7 +5,7 @@ import cors from "cors";
 // import setsRouter from "./routes/sets";
 // import likesRouter from "./routes/likes";
 // import favoritesRouter from "./routes/favorites";
-import testRouter from "./routes/test";
+import testRouter from "./routes/file";
 // import { checkApiKey } from "./config";
 
 const PORT = process.env.PORT ?? 3000;
