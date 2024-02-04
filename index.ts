@@ -16,7 +16,7 @@ app.use(express.json());
 app.get("/", (req, res) => res.status(200).json("hello world"))
 
 app.use("/auth", authRouter);
-app.use("/posts", postsRouter);
+// app.use("/posts", postsRouter);
 // app.use("/sets", setsRouter);
 // app.use("/likes", likesRouter);
 // app.use("/favorites", favoritesRouter);
