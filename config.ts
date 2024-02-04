@@ -3,6 +3,13 @@ import * as dotenv from "dotenv";
 import { NextFunction, Request, Response } from "express";
 dotenv.config();
 
+export const metrics = [
+  "likes",
+  "favorites",
+  "quizesPlayed",
+  "flashcardsPlayed",
+];
+
 /**
  * Database connection
  */
@@ -40,9 +47,6 @@ export function getReqOptions(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
-/**
- * @deprecated
- */
 export function generateGameString(game: string) {
   switch (game) {
     case "quiz":

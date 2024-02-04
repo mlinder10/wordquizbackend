@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { client, getReqOptions } from "../config";
+import { client, getReqOptions, generateGameString, metrics } from "../config";
 import Set from "../models/Set";
 
 const router = Router();
@@ -68,7 +68,6 @@ router.get("/:uid", async (req, res) => {
 /**
  * Get popular sets by likes, favorites, quizes played, or flashcards reviewed
  */
-const metrics = ["likes", "favorites", "quizesPlayed", "flashcardsPlayed"];
 router.get("/popular/:metric", async (req, res) => {
   const { metric } = req.params;
   const { uid, limit, offset } = req.body;
@@ -128,22 +127,22 @@ router.post("/", async (req, res) => {
 /**
  * Increment game count
  */
-// router.patch("/:sid", async (req, res) => {
-//   try {
-//     const { game } = req.body;
-//     const column = generateGameString(game);
-//     if (column === null)
-//       return res.status(400).json({ message: "Invalid game" });
-//     await client.execute({
-//       sql: `update sets set ${column} = ${column} + 1 where sid = ?`,
-//       args: [req.params.sid],
-//     });
-//     return res.status(200).json({ message: "success" });
-//   } catch (err: any) {
-//     console.log(err?.message);
-//     return res.status(500).json({ message: "Internal server error" });
-//   }
-// });
+router.patch("/:sid", async (req, res) => {
+  try {
+    const { game } = req.body;
+    const column = generateGameString(game);
+    if (column === null)
+      return res.status(400).json({ message: "Invalid game" });
+    await client.execute({
+      sql: `update sets set ${column} = ${column} + 1 where sid = ?`,
+      args: [req.params.sid],
+    });
+    return res.status(200).json({ message: "success" });
+  } catch (err: any) {
+    console.log(err?.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 /**
  * Delete set by sid

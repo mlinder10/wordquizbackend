@@ -5,6 +5,31 @@ import Set from "../models/Set";
 
 const router = Router();
 
+router.get("/:uid", async (req, res) => {
+  const { uid } = req.params;
+  try {
+    const rs = await client.execute({
+      sql: `select
+              sets.*,
+              case when likes.uid is not null then 1 else 0 end as liked,
+              case when favorites.uid is not null then 1 else 0 end as favorited
+            from
+                sets
+            left join
+                likes on sets.sid = likes.sid and likes.uid = ?
+            join
+                favorites on sets.sid = favorites.sid
+            where
+                favorites.uid = ?`,
+      args: [uid, uid],
+    });
+    return res.status(200).json(rs.rows.map((row) => Set.fromRow(row)));
+  } catch (err: any) {
+    console.log(err?.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 /**
  * Add or remove favorite from set
  */
