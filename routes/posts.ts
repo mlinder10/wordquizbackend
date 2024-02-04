@@ -1,10 +1,13 @@
 import { Router } from "express";
 import { client, getReqOptions } from "../config";
-import Post from "../models/post";
+import Post from "../models/Post";
 
 const router = Router();
 router.use(getReqOptions);
 
+/**
+ * Get recent posts
+ */
 router.get("/", async (req, res) => {
   const { limit, offset } = req.body;
 
@@ -28,6 +31,9 @@ router.get("/", async (req, res) => {
   }
 });
 
+/**
+ * Search for posts by title
+ */
 router.get("/:search", async (req, res) => {
   const { search } = req.params;
   try {
@@ -42,11 +48,14 @@ router.get("/:search", async (req, res) => {
   }
 });
 
+/**
+ * Get posts by pids
+ */
 router.post("/", async (req, res) => {
   try {
     const { pids } = req.body;
 
-    const placeholders = pids.map(() => '?').join(',');
+    const placeholders = pids.map(() => "?").join(",");
 
     const rs = await client.execute({
       sql: `select * from posts where pid in (${placeholders})`,

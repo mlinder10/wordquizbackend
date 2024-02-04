@@ -1,12 +1,15 @@
 import { Router } from "express";
-import User from "../models/user";
+import User from "../models/User";
 import { client } from "../config";
 
 const router = Router();
 
+/**
+ * Login with email and password
+ */
 router.post("/login", async (req, res) => {
   try {
-    console.log(req.body)
+    console.log(req.body);
     const { email, password } = req.body;
     const user = await User.login(email, password);
     if (!user)
@@ -18,6 +21,9 @@ router.post("/login", async (req, res) => {
   }
 });
 
+/**
+ * Register with email, username, and password
+ */
 router.post("/register", async (req, res) => {
   try {
     const { email, username, password } = req.body;
@@ -30,6 +36,9 @@ router.post("/register", async (req, res) => {
   }
 });
 
+/**
+ * Delete user by uid
+ */
 router.delete("/:uid", async (req, res) => {
   try {
     const { uid } = req.params;

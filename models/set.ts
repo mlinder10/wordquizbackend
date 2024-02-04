@@ -1,9 +1,9 @@
 import { Row } from "@libsql/client/.";
-import User from "./user";
+import User from "./User";
 import { v4 as uuid } from "uuid";
-import Post from "./post";
+import Post from "./Post";
 
-export class Set {
+export default class Set {
   sid: string;
   name: string;
   posts: string[];
@@ -13,8 +13,10 @@ export class Set {
   createdAt: string;
   quizesPlayed: number;
   flashcardsPlayed: number;
-  likes: string[];
-  favorites: string[];
+  likes: number;
+  favorites: number;
+  liked: boolean;
+  favorited: boolean;
 
   constructor(
     sid: string,
@@ -26,8 +28,10 @@ export class Set {
     createdAt: string,
     quizesPlayed: number,
     flashcardsPlayed: number,
-    likes: string[],
-    favorites: string[]
+    likes: number,
+    favorites: number,
+    liked: boolean,
+    favorited: boolean
   ) {
     this.sid = sid;
     this.name = name;
@@ -40,6 +44,8 @@ export class Set {
     this.flashcardsPlayed = flashcardsPlayed;
     this.likes = likes;
     this.favorites = favorites;
+    this.liked = liked;
+    this.favorited = favorited;
   }
 
   static fromRow(row: Row): Set | null {
@@ -53,8 +59,10 @@ export class Set {
       typeof row.createdAt !== "string" ||
       typeof row.quizesPlayed !== "number" ||
       typeof row.flashcardsPlayed !== "number" ||
-      typeof row.likes !== "string" ||
-      typeof row.favorites !== "string"
+      typeof row.likes !== "number" ||
+      typeof row.favorites !== "number" ||
+      typeof row.liked !== "number" ||
+      typeof row.favorited !== "number"
     )
       return null;
     return new Set(
@@ -67,24 +75,28 @@ export class Set {
       row.createdAt,
       row.quizesPlayed,
       row.flashcardsPlayed,
-      JSON.parse(row.likes),
-      JSON.parse(row.favorites)
+      row.likes,
+      row.favorites,
+      row.liked === 1,
+      row.favorited === 1
     );
   }
 
   static create(user: User, posts: Post[], name: string): Set {
     return new Set(
-      uuid(),
-      name,
-      posts.map((post) => post.pid),
-      user.uid,
-      user.email,
-      user.username,
-      new Date().toISOString(),
-      0,
-      0,
-      [],
-      []
+      uuid(), // sid
+      name, // name
+      posts.map((post) => post.pid), // posts
+      user.uid, // uid
+      user.email, // email
+      user.username, // username
+      new Date().toISOString(), // createdAt
+      0, // quizesPlayed
+      0, // flashcardsPlayed
+      0, // likes
+      0, // favorites
+      false, // liked
+      false // favorited
     );
   }
 }

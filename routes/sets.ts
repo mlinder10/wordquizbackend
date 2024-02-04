@@ -1,25 +1,34 @@
 import { Router } from "express";
 import { client, generateGameString, getReqOptions } from "../config";
-import { Set } from "../models/set";
+import Set from "../models/Set";
 
 const router = Router();
+// Setup middleware to pull limit and offset from query
 router.use(getReqOptions);
-const games = ["quiz", "flashcards"];
 
+/**
+ * Get recent sets
+ */
 router.get("/", async (req, res) => {
-  const { limit, offset } = req.body;
+  const { uid, limit, offset } = req.body;
+  const orderBy = req.body.shuffle ? "random()" : "createdAt desc";
   try {
-    if (req.body.shuffle) {
-      const rs = await client.execute({
-        sql: "select * from sets order by random() limit ? offset ?",
-        args: [limit, offset],
-      });
-      return res.status(200).json(rs.rows.map((row) => Set.fromRow(row)));
-    }
-
     const rs = await client.execute({
-      sql: "select * from sets limit ? offset ?",
-      args: [limit, offset],
+      sql: `select
+              sets.*,
+              case when likes.uid is not null then 1 else 0 end as liked,
+              case when favorites.uid is not null then 1 else 0 end as favorited
+            from
+              sets
+            left join
+              likes on sets.sid = likes.sid and likes.uid = ?
+            left join
+              favorites on sets.sid = favorites.sid and favorites.uid = ?
+            order by
+              ${orderBy}
+            limit ?
+            offset ?`,
+      args: [uid, uid, limit, offset],
     });
     return res.status(200).json(rs.rows.map((row) => Set.fromRow(row)));
   } catch (err: any) {
@@ -28,11 +37,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+/**
+ * Get sets associated with uid
+ */
 router.get("/:uid", async (req, res) => {
+  const { uid } = req.params;
   try {
     const rs = await client.execute({
-      sql: "select * from sets where uid = ?",
-      args: [req.params.uid],
+      sql: `select
+              sets.*,
+              case when likes.uid is not null then 1 else 0 end as liked,
+              case when favorites.uid is not null then 1 else 0 end as favorited
+            from
+              sets
+            left join
+              likes on sets.sid = likes.sid and likes.uid = ?
+            left join
+              favorites on sets.sid = favorites.sid and favorites.uid = ?
+            where
+              sets.uid = ?`,
+      args: [uid, uid, uid],
     });
     return res.status(200).json(rs.rows.map((row) => Set.fromRow(row)));
   } catch (err: any) {
@@ -41,23 +65,43 @@ router.get("/:uid", async (req, res) => {
   }
 });
 
-// router.get("/popular/:uid", async (req, res) => {
-//   const { uid } = req.params;
-//   const { limit, offset } = req.body;
-//   try {
-//     if (uid === "all") {
-//       const rs = await client.execute({
-//         sql: "select * from sets order by quizesPlayed + flashcardsPlayed desc limit ? offset ?",
-//         args: [limit, offset],
-//       });
-//       return res.status(200).json(rs.rows.map((row) => Set.fromRow(row)));
-//     }
-//   } catch (err: any) {
-//     console.log(err?.message);
-//     return res.status(500).json({ message: "Internal server error" });
-//   }
-// });
+/**
+ * Get popular sets by likes, favorites, quizes played, or flashcards reviewed
+ */
+const metrics = ["likes", "favorites", "quizesPlayed", "flashcardsPlayed"];
+router.get("/popular/:metric", async (req, res) => {
+  const { metric } = req.params;
+  const { uid, limit, offset } = req.body;
+  try {
+    if (!metrics.includes(metric))
+      return res.status(400).json({ message: "Invalid metric" });
+    const rs = await client.execute({
+      sql: `select
+              sets.*,
+              case when likes.uid is not null then 1 else 0 end as liked,
+              case when favorites.uid is not null then 1 else 0 end as favorited
+            from
+              sets
+            left join
+              likes on sets.sid = likes.sid and likes.uid = ?
+            left join
+              favorites on sets.sid = favorites.sid and favorites.uid = ?
+            order by
+              ${metric} desc
+            limit ?
+            offset ?`,
+      args: [uid, uid, limit, offset],
+    });
+    return res.status(200).json(rs.rows.map((row) => Set.fromRow(row)));
+  } catch (err: any) {
+    console.log(err?.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
 
+/**
+ * Create new set
+ */
 router.post("/", async (req, res) => {
   const { user, posts, name } = req.body;
   const set = Set.create(user, posts, name);
@@ -81,87 +125,29 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.patch("/:sid/like", async (req, res) => {
-  const { sid } = req.params;
-  const { uid } = req.body;
-  try {
-    const rs = await client.execute({
-      sql: "select * from sets where sid = ?",
-      args: [sid],
-    });
-    const set = Set.fromRow(rs.rows[0]);
-    if (!set) return res.status(404).json({ message: "Set not found" });
-    if (set.likes.includes(uid)) {
-      await client.execute({
-        sql: "update sets set likes = ? where sid = ?",
-        args: [JSON.stringify(set.likes.filter((like) => like !== uid)), sid],
-      });
-    } else {
-      await client.execute({
-        sql: "update sets set likes = ? where sid = ?",
-        args: [JSON.stringify([...set.likes, uid]), sid],
-      });
-    }
-    const rs2 = await client.execute({
-      sql: "select * from sets where sid = ?",
-      args: [sid],
-    });
-    return res.status(202).json(Set.fromRow(rs2.rows[0]));
-  } catch (err: any) {
-    console.log(err?.message);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-});
+/**
+ * Increment game count
+ */
+// router.patch("/:sid", async (req, res) => {
+//   try {
+//     const { game } = req.body;
+//     const column = generateGameString(game);
+//     if (column === null)
+//       return res.status(400).json({ message: "Invalid game" });
+//     await client.execute({
+//       sql: `update sets set ${column} = ${column} + 1 where sid = ?`,
+//       args: [req.params.sid],
+//     });
+//     return res.status(200).json({ message: "success" });
+//   } catch (err: any) {
+//     console.log(err?.message);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// });
 
-router.patch("/:sid/favorite", async (req, res) => {
-  const { sid } = req.params;
-  const { uid } = req.body;
-  try {
-    const rs = await client.execute({
-      sql: "select * from sets where sid = ?",
-      args: [sid],
-    });
-    const set = Set.fromRow(rs.rows[0]);
-    if (!set) return res.status(404).json({ message: "Set not found" });
-    if (set.favorites.includes(uid)) {
-      await client.execute({
-        sql: "update sets set favorites = ? where sid = ?",
-        args: [JSON.stringify(set.favorites.filter((fav) => fav !== uid)), sid],
-      });
-    } else {
-      await client.execute({
-        sql: "update sets set favorites = ? where sid = ?",
-        args: [JSON.stringify([...set.favorites, uid]), sid],
-      });
-    }
-    const rs2 = await client.execute({
-      sql: "select * from sets where sid = ?",
-      args: [sid],
-    });
-    return res.status(202).json(Set.fromRow(rs2.rows[0]));
-  } catch (err: any) {
-    console.log(err?.message);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-});
-
-router.patch("/:sid", async (req, res) => {
-  try {
-    const { game } = req.body;
-    const column = generateGameString(game);
-    if (column === null)
-      return res.status(400).json({ message: "Invalid game" });
-    await client.execute({
-      sql: `update sets set ${column} = ${column} + 1 where sid = ?`,
-      args: [req.params.sid],
-    });
-    return res.status(200).json({ message: "success" });
-  } catch (err: any) {
-    console.log(err?.message);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-});
-
+/**
+ * Delete set by sid
+ */
 router.delete("/:sid", async (req, res) => {
   try {
     await client.execute({

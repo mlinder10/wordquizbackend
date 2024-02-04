@@ -1,6 +1,6 @@
 import { Row } from "@libsql/client";
 
-class Post {
+export default class Post {
   pid: string;
   uid: string;
   word: string;
@@ -60,5 +60,3 @@ class Post {
     );
   }
 }
-
-export default Post;
