@@ -2,7 +2,7 @@ import { Row } from "@libsql/client";
 import { client } from "../config";
 import { v4 as uuid } from "uuid";
 
-export class User {
+export default class User {
   uid: string;
   email: string;
   username: string;
