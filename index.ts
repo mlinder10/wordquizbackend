@@ -13,10 +13,12 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 // app.use(checkApiKey);
 
-app.use("/auth", authRouter);
-app.use("/posts", postsRouter);
-app.use("/sets", setsRouter);
-app.use("/likes", likesRouter);
-app.use("/favorites", favoritesRouter);
+app.get("/", (req, res) => res.status(200).json("hello world"))
+
+// app.use("/auth", authRouter);
+// app.use("/posts", postsRouter);
+// app.use("/sets", setsRouter);
+// app.use("/likes", likesRouter);
+// app.use("/favorites", favoritesRouter);
 
 app.listen(PORT, () => console.log(`listening on port ${PORT}`));
