@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { client, generateGameString, getReqOptions } from "../config";
+import { client, getReqOptions } from "../config";
 import Set from "../models/Set";
 
 const router = Router();
