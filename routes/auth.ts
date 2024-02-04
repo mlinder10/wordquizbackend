@@ -4,9 +4,6 @@ import { client } from "../config";
 
 const router = Router();
 
-/**
- * Login with email and password
- */
 router.post("/login", async (req, res) => {
   try {
     console.log(req.body);
@@ -21,9 +18,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-/**
- * Register with email, username, and password
- */
 router.post("/register", async (req, res) => {
   try {
     const { email, username, password } = req.body;
@@ -36,9 +30,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-/**
- * Delete user by uid
- */
 router.delete("/:uid", async (req, res) => {
   try {
     const { uid } = req.params;
